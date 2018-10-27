@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    getto-initialize_with (1.0.0)
+    getto-params (0.1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -21,7 +21,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
-  getto-initialize_with!
+  getto-params!
   minitest (~> 5.0)
   rake (~> 10.0)
   simplecov (~> 0.16)

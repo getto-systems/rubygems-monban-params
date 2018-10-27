@@ -9,7 +9,9 @@ require "getto/params"
 
 Getto::Params.new.validate(params) do |v|
   v.hash(
-    "name"  => v.combine([v.string, v.not_empty]){|val,key| raise ArgumentError, "#{key}: #{val}" },
+    "name"  => v.combine([v.string, v.not_empty]){|val|
+      raise ArgumentError, "name should be not empty string: #{val}"
+    },
     "token" => v.combine([v.string, v.allow_empty(v.length(5))]),
     "key"   => v.equal("KEY"),
     "str1"  => v.in(["param1","param2"]),
@@ -149,7 +151,7 @@ Getto::Params.new.validate(params) do |v|
 
 
     # raise error if key valudation failed
-    "key" => v.string{|val,key| raise ArgumentError, "#{key} should be string: #{val}" }
+    "key" => v.string{|val| raise ArgumentError, "#key should be string: #{val}" }
   )
 end
 # => true  : success
