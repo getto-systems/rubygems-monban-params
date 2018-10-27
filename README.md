@@ -151,7 +151,7 @@ Getto::Params.new.validate(params) do |v|
 
 
     # raise error if valudation failed
-    "key" => v.string{|val| raise ArgumentError, "#key should be string: #{val}" }
+    "key" => v.string{|val| raise ArgumentError, "key should be string: #{val}" }
   )
 end
 # => true  : success
