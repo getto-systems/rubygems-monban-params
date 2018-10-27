@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["shun@getto.systems"]
 
   spec.summary       = %q{validation and format params}
-  spec.description   = %q{Validate parameters like strong-parameters(rails)}
+  spec.description   = %q{Validate parameters like strong-parameters(rails), and parameter formatter for search api}
   spec.homepage      = "https://github.com/getto-systems/getto-params"
   spec.license       = "MIT"
 
