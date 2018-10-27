@@ -150,7 +150,7 @@ Getto::Params.new.validate(params) do |v|
     "key" => v.combine([v.string, v.not_empty]),
 
 
-    # raise error if key valudation failed
+    # raise error if valudation failed
     "key" => v.string{|val| raise ArgumentError, "#key should be string: #{val}" }
   )
 end
@@ -207,13 +207,13 @@ end
 # sort: "name.asc"
 # => sort: {
 #   column: :name,
-#   order: true,
+#   order: true, # asc => true
 # }
 
 # sort: "name.desc"
 # => sort: {
 #   column: :name,
-#   order: false,
+#   order: false, # desc => false
 # }
 ```
 
@@ -221,20 +221,20 @@ end
 
 ```ruby
 search.sort do |s|
-  # sort name as straight order
-  s.straight :name
+  # sort name as invert order
+  s.invert :name
 end
 
 # sort: "name.asc"
 # => sort: {
 #   column: :name,
-#   order: false,
+#   order: false, # asc => false
 # }
 
 # sort: "name.desc"
 # => sort: {
 #   column: :name,
-#   order: true,
+#   order: true, # desc => true
 # }
 ```
 
