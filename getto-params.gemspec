@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{validation and format params}
   spec.description   = %q{Validate parameters like strong-parameters(rails), and parameter formatter for search api}
-  spec.homepage      = "https://github.com/getto-systems/getto-params"
+  spec.homepage      = "https://github.com/getto-systems/rubygems-getto-params"
   spec.license       = "MIT"
 
   # Specify which files should be added to the gem when it is released.
