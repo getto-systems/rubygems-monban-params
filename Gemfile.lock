@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    getto-params (1.0.2)
+    getto-params (1.0.3)
 
 GEM
   remote: https://rubygems.org/
