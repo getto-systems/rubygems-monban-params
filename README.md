@@ -194,6 +194,22 @@ Getto::Params::Search.new(
 end
 ```
 
+#### pages
+
+```ruby
+# page: 1, limit: 1000
+# => {
+#  limit:  1000,
+#  offset: 0,
+# }
+
+# page: 2, limit: 1000
+# => {
+#  limit:  1000,
+#  offset: 1000,
+# }
+```
+
 #### sort order
 
 - straight order
