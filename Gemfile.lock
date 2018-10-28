@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    getto-params (1.0.0)
+    getto-params (1.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -27,4 +27,4 @@ DEPENDENCIES
   simplecov (~> 0.16)
 
 BUNDLED WITH
-   1.16.2
+   1.16.6
