@@ -48,6 +48,7 @@ Getto::Params::Search.new(
   sort: "name.asc",
   query: {
     "name.cont" => "search",
+    "value.eq"  => "value1",
   },
 ).to_h do |search|
   search.sort do |s|
@@ -55,6 +56,7 @@ Getto::Params::Search.new(
   end
   search.query do |q|
     q.search "name.cont", &q.not_empty
+    q.search("name.cont"){|val| ["value1","value2"].include? val }
   end
 end
 # => {
@@ -66,6 +68,7 @@ end
 #   },
 #   query: {
 #     "name.cont": "search",
+#     "value.eq":  "value1",
 #   },
 # }
 ```
@@ -287,6 +290,23 @@ end
 # query: { "name.in" => ["value1","value2"] }
 # => query: {
 #   "name.in": ["value1","value2"],
+# }
+```
+
+- check by block
+
+```ruby
+search.query do |q|
+  q.search("value.eq"){|val| ["value1","value2"].include? val }
+end
+
+# query: { "value.eq" => "value3" }
+# => query: {
+# }
+
+# query: { "value.eq" => "value1" }
+# => query: {
+#   "value.eq": "value1",
 # }
 ```
 
