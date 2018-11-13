@@ -16,6 +16,7 @@ module Getto::ParamsTest
           "str1"  => "param1",
           "str2"  => "param2",
           "tel"   => "080-1234-5678",
+          "date"  => "2018-10-01",
           "number" => "1234",
           "bool"  => "True",
           "hash"  => {
@@ -41,6 +42,7 @@ module Getto::ParamsTest
               "str1"  => v.in(["param1","param2"]),
               "str2"  => v.in(["param1","param2"]),
               "tel"   => v.combine([v.string, v.match(%r{\A[0-9]+-[0-9]+-[0-9]+\Z})]),
+              "date"  => v.combine([v.string, v.match_date]),
               "number" => v.match_integer,
               "bool"  => v.match_bool,
               "hash"  => v.hash(
@@ -193,6 +195,22 @@ module Getto::ParamsTest
           !Getto::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.match_bool,
+            )
+          end
+        )
+      end
+    end
+
+    describe "match_date" do
+      it "failed with invalid date" do
+        params = {
+          "date" => "2018-02-29",
+        }
+
+        assert(
+          !Getto::Params.new.validate(params) do |v|
+            v.hash(
+              "date" => v.match_date,
             )
           end
         )
