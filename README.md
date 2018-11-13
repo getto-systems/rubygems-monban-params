@@ -17,6 +17,8 @@ Getto::Params.new.validate(params) do |v|
     "str1"  => v.in(["param1","param2"]),
     "str2"  => v.in(["param1","param2"]),
     "tel"   => v.combine([v.string, v.match(%r{\A[0-9]+-[0-9]+-[0-9]+\Z})]),
+    "date"  => v.combine([v.string, v.match_date]),
+    "data"  => v.not_nil,
     "number" => v.match_integer,
     "bool"  => v.match_bool,
     "hash"  => v.hash(
@@ -42,6 +44,8 @@ end
 ```ruby
 require "getto/params/search"
 
+time = Time # respond to `parse`
+
 Getto::Params::Search.new(
   page:  1,
   limit: 1000,
@@ -49,14 +53,28 @@ Getto::Params::Search.new(
   query: {
     "name.cont" => "search",
     "value.eq"  => "value1",
+    "date.lteq" => "2018-10-01",
+    "time.gteq" => "2018-10-01",
+    "time.lteq" => "2018-10-01",
   },
 ).to_h do |search|
   search.sort do |s|
     s.straight :name
   end
+
+  search.convert do |c|
+    c.convert "date.lteq", &c.to_date
+    c.convert "time.gteq", &c.to_beginning_of_day(time)
+    c.convert "time.lteq", &c.to_end_of_day(time)
+  end
+
   search.query do |q|
     q.search "name.cont", &q.not_empty
-    q.search("name.cont"){|val| ["value1","value2"].include? val }
+    q.search("value.eq"){|val| ["value1","value2"].include? val }
+
+    q.search "date.lteq", &q.not_nil
+    q.search "time.gteq", &q.not_nil
+    q.search "time.lteq", &q.not_nil
   end
 end
 # => {
@@ -69,6 +87,9 @@ end
 #   query: {
 #     "name.cont": "search",
 #     "value.eq":  "value1",
+#     "date.lteq":  Date.parse("2018-10-01"),
+#     "time.gteq":  Time.parse("2018-10-01 00:00:00"),
+#     "time.lteq":  Time.parse("2018-10-01 23:59:59"),
 #   },
 # }
 ```
@@ -126,6 +147,9 @@ Getto::Params.new.validate(params) do |v|
     # downcase should be equal to "true" or "false"
     "key" => v.match_bool,
 
+    # should match date
+    "key" => v.match_date,
+
 
     # should be hash includes :key that value is string
     "key" => v.hash(
@@ -152,6 +176,9 @@ Getto::Params.new.validate(params) do |v|
     # validate string and not_empty
     "key" => v.combine([v.string, v.not_empty]),
 
+    # validate not_nil
+    "key" => v.not_nil,
+
 
     # raise error if valudation failed
     "key" => v.string{|val| raise ArgumentError, "key should be string: #{val}" }
@@ -169,6 +196,8 @@ Format parameters for search api
 ```ruby
 require "getto/params/search"
 
+time = Time # respond to `parse`
+
 Getto::Params::Search.new(
   page:  1,
   limit: 1000,
@@ -184,6 +213,12 @@ Getto::Params::Search.new(
 
     # sort name as invert order
     s.invert :name
+  end
+
+  search.convert do |c|
+    c.convert "date.lteq", &c.to_date
+    c.convert "time.gteq", &c.to_beginning_of_day(time)
+    c.convert "time.lteq", &c.to_end_of_day(time)
   end
 
   search.query do |q|
@@ -257,6 +292,62 @@ end
 # }
 ```
 
+#### convert query
+
+- to date
+
+```ruby
+search.convert do |c|
+  c.convert "date.lteq", &c.to_date
+end
+
+# query: { "date.lteq" => "invalid date" }
+# => query: {
+#   "date.lteq" => nil,
+# }
+
+# query: { "date.lteq" => "2018-10-01" }
+# => query: {
+#   "date.lteq" => Date.parse("2018-10-01"),
+# }
+```
+
+- to beginning of day, to end of day
+
+```ruby
+time = Time # respond to `parse`
+
+search.convert do |c|
+  c.convert "time.gteq", &c.to_beginning_of_day(time)
+  c.convert "time.lteq", &c.to_end_of_day(time)
+end
+
+# query: { "time.gteq" => "invalid date", "time.lteq" => "invalid date" }
+# => query: {
+#   "time.gteq" => nil,
+#   "time.lteq" => nil,
+# }
+
+# query: { "time.gteq" => "2018-10-01", "time.lteq" => "2018-10-01" }
+# => query: {
+#   "time.gteq" => Date.parse("2018-10-01 00:00:00"),
+#   "time.lteq" => Date.parse("2018-10-01 23:59:59"),
+# }
+```
+
+- convert by block
+
+```ruby
+search.convert do |c|
+  c.convert("name.cont"){|search| search.upcase }
+end
+
+# query: { "name.cont" => "search" }
+# => query: {
+#   "name.cont" => "SEARCH",
+# }
+```
+
 #### search condition
 
 - not empty
@@ -267,6 +358,23 @@ search.query do |q|
 end
 
 # query: { "name.cont" => "" }
+# => query: {
+# }
+
+# query: { "name.cont" => "search" }
+# => query: {
+#   "name.cont": "search",
+# }
+```
+
+- not nil
+
+```ruby
+search.query do |q|
+  q.search "name.cont", &q.not_nil
+end
+
+# query: { "name.cont" => nil }
 # => query: {
 # }
 

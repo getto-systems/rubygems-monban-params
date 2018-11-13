@@ -3,6 +3,12 @@ require "test_helper"
 require "getto/params/search"
 
 module Getto::Params::SearchTest
+  class Time
+    def parse(str)
+      ::Time.parse(str)
+    end
+  end
+
   describe Getto::Params::Search do
 
     describe "search params" do
@@ -12,15 +18,28 @@ module Getto::Params::SearchTest
         sort = "login_id.asc"
         query = {
           "login_id.cont" => "search",
+          "date.gteq" => "2018-10-01",
+          "time.gteq" => "2018-10-01",
+          "time.lteq" => "2018-10-01",
         }
+
+        time = Time.new
 
         assert_equal(
           Getto::Params::Search.new(page: page, limit: limit, sort: sort, query: query).to_h do |search|
             search.sort do |s|
               s.straight :login_id
             end
+            search.convert do |c|
+              c.convert "date.gteq", &c.to_date
+              c.convert "time.gteq", &c.to_beginning_of_day(time)
+              c.convert "time.lteq", &c.to_end_of_day(time)
+            end
             search.query do |q|
               q.search "login_id.cont", &q.not_empty
+              q.search "date.gteq", &q.not_nil
+              q.search "time.gteq", &q.not_nil
+              q.search "time.lteq", &q.not_nil
             end
           end,
           {
@@ -32,6 +51,9 @@ module Getto::Params::SearchTest
             },
             query: {
               "login_id.cont": "search",
+              "date.gteq": ::Date.parse("2018-10-01"),
+              "time.gteq": ::Time.parse("2018-10-01 00:00:00"),
+              "time.lteq": ::Time.parse("2018-10-01 23:59:59"),
             },
           }
         )
@@ -67,18 +89,18 @@ module Getto::Params::SearchTest
     describe "sort params" do
       it "returns sort as straight order" do
         assert_equal(
-          Getto::Params::Search::Sort.new(sort: "login_id.asc").to_h do |s|
+          Getto::Params::Search::Sort.new(sort: "login_id.asc").to_h(sort: ->(s){
             s.straight :login_id
-          end,
+          }),
           {
             column: :login_id,
             order: true,
           }
         )
         assert_equal(
-          Getto::Params::Search::Sort.new(sort: "login_id.desc").to_h do |s|
+          Getto::Params::Search::Sort.new(sort: "login_id.desc").to_h(sort: ->(s){
             s.straight :login_id
-          end,
+          }),
           {
             column: :login_id,
             order: false,
@@ -88,18 +110,18 @@ module Getto::Params::SearchTest
 
       it "returns sort as invert order" do
         assert_equal(
-          Getto::Params::Search::Sort.new(sort: "login_id.asc").to_h do |s|
+          Getto::Params::Search::Sort.new(sort: "login_id.asc").to_h(sort: ->(s){
             s.invert :login_id
-          end,
+          }),
           {
             column: :login_id,
             order: false,
           }
         )
         assert_equal(
-          Getto::Params::Search::Sort.new(sort: "login_id.desc").to_h do |s|
+          Getto::Params::Search::Sort.new(sort: "login_id.desc").to_h(sort: ->(s){
             s.invert :login_id
-          end,
+          }),
           {
             column: :login_id,
             order: true,
@@ -109,12 +131,47 @@ module Getto::Params::SearchTest
 
       it "returns empty when unknown column specified" do
         assert_equal(
-          Getto::Params::Search::Sort.new(sort: "unknown.asc").to_h do |s|
+          Getto::Params::Search::Sort.new(sort: "unknown.asc").to_h(sort: ->(s){
             s.straight :login_id
-          end,
+          }),
           {
             column: nil,
             order: true,
+          }
+        )
+      end
+    end
+
+    describe "convert" do
+      it "returns nil with invalid date" do
+        assert_equal(
+          Getto::Params::Search::Query.new(query: {
+            "date.lteq" => "search",
+          }).to_h(convert: ->(c){
+            c.convert "date.lteq", &c.to_date
+          }, check: ->(q){
+            q.search "date.lteq", &q.not_nil
+          }),
+          {
+          }
+        )
+      end
+
+      it "returns nil with invalid time" do
+        time = Time.new
+
+        assert_equal(
+          Getto::Params::Search::Query.new(query: {
+            "time.gteq" => "search",
+            "time.lteq" => "search",
+          }).to_h(convert: ->(c){
+            c.convert "time.gteq", &c.to_beginning_of_day(time)
+            c.convert "time.lteq", &c.to_end_of_day(time)
+          }, check: ->(q){
+            q.search "time.gteq", &q.not_nil
+            q.search "time.lteq", &q.not_nil
+          }),
+          {
           }
         )
       end
@@ -125,9 +182,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "login_id.cont" => "search",
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.cont", &q.not_empty
-          end,
+          }),
           {
             "login_id.cont": "search",
           }
@@ -138,9 +195,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "login_id.cont" => "",
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.cont", &q.not_empty
-          end,
+          }),
           {
           }
         )
@@ -150,9 +207,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "unknown.cont" => "",
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.cont", &q.not_empty
-          end,
+          }),
           {
           }
         )
@@ -164,9 +221,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "login_id.in" => ["search"],
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.in", &q.not_all_empty
-          end,
+          }),
           {
             "login_id.in": ["search"],
           }
@@ -177,9 +234,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "login_id.in" => [],
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.in", &q.not_all_empty
-          end,
+          }),
           {
           }
         )
@@ -189,9 +246,9 @@ module Getto::Params::SearchTest
         assert_equal(
           Getto::Params::Search::Query.new(query: {
             "login_id.in" => ["", ""],
-          }).to_h do |q|
+          }).to_h(convert: nil, check: ->(q){
             q.search "login_id.in", &q.not_all_empty
-          end,
+          }),
           {
           }
         )
