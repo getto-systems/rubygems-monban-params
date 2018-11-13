@@ -354,6 +354,23 @@ end
 # }
 ```
 
+- not nil
+
+```ruby
+search.query do |q|
+  q.search "name.cont", &q.not_nil
+end
+
+# query: { "name.cont" => nil }
+# => query: {
+# }
+
+# query: { "name.cont" => "search" }
+# => query: {
+#   "name.cont": "search",
+# }
+```
+
 - not all empty
 
 ```ruby
