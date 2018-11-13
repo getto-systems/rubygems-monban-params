@@ -17,6 +17,8 @@ Getto::Params.new.validate(params) do |v|
     "str1"  => v.in(["param1","param2"]),
     "str2"  => v.in(["param1","param2"]),
     "tel"   => v.combine([v.string, v.match(%r{\A[0-9]+-[0-9]+-[0-9]+\Z})]),
+    "date"  => v.combine([v.string, v.match_date]),
+    "data"  => v.not_nil,
     "number" => v.match_integer,
     "bool"  => v.match_bool,
     "hash"  => v.hash(
@@ -126,6 +128,9 @@ Getto::Params.new.validate(params) do |v|
     # downcase should be equal to "true" or "false"
     "key" => v.match_bool,
 
+    # should match date
+    "key" => v.match_date,
+
 
     # should be hash includes :key that value is string
     "key" => v.hash(
@@ -151,6 +156,9 @@ Getto::Params.new.validate(params) do |v|
 
     # validate string and not_empty
     "key" => v.combine([v.string, v.not_empty]),
+
+    # validate not_nil
+    "key" => v.not_nil,
 
 
     # raise error if valudation failed
