@@ -1,3 +1,5 @@
+require "date"
+
 module Getto
   class Params
     def initialize(factory=Validator::Factory.new)
@@ -62,6 +64,16 @@ module Getto
 
         def match_bool(&block)
           Validator.new(->(value){ value && ["true","false"].include?(value.to_s.downcase) }, &block)
+        end
+
+        def match_date(&block)
+          Validator.new(->(value){
+            begin
+              value && Date.parse(value)
+            rescue ArgumentError
+              false
+            end
+          }, &block)
         end
 
 
