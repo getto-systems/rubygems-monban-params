@@ -8,24 +8,28 @@ module Getto
       end
 
       def to_h
-        @page.to_h.tap{|result|
-          yield Worker.new(sort: @sort, query: @query, result: result)
-        }
+        worker = Worker.new
+        yield worker
+
+        @page.to_h
+          .merge(sort: @sort.to_h(sort: worker.instance_variable_get(:@sort)))
+          .merge(query: @query.to_h(
+            convert: worker.instance_variable_get(:@convert),
+            check:   worker.instance_variable_get(:@check),
+          ))
       end
 
       class Worker
-        def initialize(sort:, query:, result:)
-          @sort = sort
-          @query = query
-          @result = result
+        def sort(&block)
+          @sort = block
         end
 
-        def sort(&block)
-          @result.merge!(sort: @sort.to_h(&block))
+        def convert(&block)
+          @convert = block
         end
 
         def query(&block)
-          @result.merge!(query: @query.to_h(&block))
+          @check = block
         end
       end
 
@@ -48,9 +52,11 @@ module Getto
           @sort = [sort.split(".")].to_h
         end
 
-        def to_h
+        def to_h(sort:)
           spec = {}
-          yield Order.new(spec)
+          if sort
+            sort.call Order.new(spec)
+          end
 
           result = {
             column: nil,
@@ -92,17 +98,73 @@ module Getto
           @query = query
         end
 
-        def to_h
-          spec = {}
-          yield Checker.new(spec)
+        def to_h(convert:, check:)
+          converters = {}
+          if convert
+            convert.call Converter.new(converters)
+          end
 
-          spec.map{|key,checker|
-            if search = @query[key]
+          checkers = {}
+          if check
+            check.call Checker.new(checkers)
+          end
+
+          query = @query.map{|key,search|
+            if converter = converters[key.to_s]
+              [key.to_s, converter.call(search)]
+            else
+              [key.to_s, search]
+            end
+          }.to_h
+
+          checkers.map{|key,checker|
+            if search = query[key]
               if checker.call(search)
-                [key.to_sym, search]
+                [key, search]
               end
             end
-          }.compact.to_h
+          }.compact.to_h.transform_keys(&:to_sym)
+        end
+
+        class Converter
+          def initialize(columns)
+            @columns = columns
+          end
+
+          def convert(column,&converter)
+            @columns[column.to_s] = converter
+          end
+
+
+          def to_date
+            ->(search) {
+              begin
+                ::Date.parse(search)
+              rescue ArgumentError
+                nil
+              end
+            }
+          end
+
+          def to_beginning_of_day(time)
+            ->(search){
+              begin
+                time.parse(search).to_date.to_time
+              rescue ArgumentError
+                nil
+              end
+            }
+          end
+
+          def to_end_of_day(time)
+            ->(search){
+              begin
+                (time.parse(search).to_date + 1).to_time - 1
+              rescue ArgumentError
+                nil
+              end
+            }
+          end
         end
 
         class Checker
@@ -117,6 +179,10 @@ module Getto
 
           def not_empty
             ->(search){ not search.empty? }
+          end
+
+          def not_nil
+            ->(search){ not search.nil? }
           end
 
           def not_all_empty
