@@ -44,6 +44,8 @@ end
 ```ruby
 require "getto/params/search"
 
+time = Time # respond to `parse`
+
 Getto::Params::Search.new(
   page:  1,
   limit: 1000,
@@ -51,14 +53,26 @@ Getto::Params::Search.new(
   query: {
     "name.cont" => "search",
     "value.eq"  => "value1",
+    "date.lteq" => "2018-10-01",
+    "time.gteq" => "2018-10-01",
+    "time.lteq" => "2018-10-01",
   },
 ).to_h do |search|
   search.sort do |s|
     s.straight :name
   end
+  search.convert do |c|
+    c.convert "date.lteq", &c.to_date
+    c.convert "time.gteq", &c.to_beginning_of_day(time)
+    c.convert "time.lteq", &c.to_end_of_day(time)
+  end
   search.query do |q|
     q.search "name.cont", &q.not_empty
-    q.search("name.cont"){|val| ["value1","value2"].include? val }
+    q.search("value.eq"){|val| ["value1","value2"].include? val }
+
+    q.search "date.lteq", &q.not_nil
+    q.search "time.gteq", &q.not_nil
+    q.search "time.lteq", &q.not_nil
   end
 end
 # => {
@@ -71,6 +85,9 @@ end
 #   query: {
 #     "name.cont": "search",
 #     "value.eq":  "value1",
+#     "date.lteq":  Date.parse("2018-10-01"),
+#     "time.gteq":  Time.parse("2018-10-01 00:00:00"),
+#     "time.lteq":  Time.parse("2018-10-01 23:59:59"),
 #   },
 # }
 ```
@@ -262,6 +279,49 @@ end
 # => sort: {
 #   column: :name,
 #   order: true, # desc => true
+# }
+```
+
+#### search query
+
+- to date
+
+```
+search.convert do |c|
+  c.convert "date.lteq", &c.to_date
+end
+
+# query: { "date.lteq" => "invalid date" }
+# => query: {
+#   "date.lteq" => nil,
+# }
+
+# query: { "date.lteq" => "2018-10-01" }
+# => query: {
+#   "date.lteq" => Date.parse("2018-10-01"),
+# }
+```
+
+- to beginning of day, to end of day
+
+```
+time = Time # respond to `parse`
+
+search.convert do |c|
+  c.convert "time.gteq", &c.to_beginning_of_day(time)
+  c.convert "time.lteq", &c.to_end_of_day(time)
+end
+
+# query: { "time.gteq" => "invalid date", "time.lteq" => "invalid date" }
+# => query: {
+#   "time.gteq" => nil,
+#   "time.lteq" => nil,
+# }
+
+# query: { "time.gteq" => "2018-10-01", "time.lteq" => "2018-10-01" }
+# => query: {
+#   "time.gteq" => Date.parse("2018-10-01 00:00:00"),
+#   "time.lteq" => Date.parse("2018-10-01 23:59:59"),
 # }
 ```
 
