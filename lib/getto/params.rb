@@ -50,6 +50,10 @@ module Getto
           Validator.new(->(value){ not value.empty? }, &block)
         end
 
+        def not_nil(&block)
+          Validator.new(->(value){ not value.nil? }, &block)
+        end
+
         def length(length,&block)
           Validator.new(->(value){ value && value.length == length }, &block)
         end
