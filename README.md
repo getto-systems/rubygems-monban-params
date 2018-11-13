@@ -292,11 +292,11 @@ end
 # }
 ```
 
-#### search query
+#### convert query
 
 - to date
 
-```
+```ruby
 search.convert do |c|
   c.convert "date.lteq", &c.to_date
 end
@@ -314,7 +314,7 @@ end
 
 - to beginning of day, to end of day
 
-```
+```ruby
 time = Time # respond to `parse`
 
 search.convert do |c|
