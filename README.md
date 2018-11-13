@@ -335,6 +335,19 @@ end
 # }
 ```
 
+- convert by block
+
+```ruby
+search.convert do |c|
+  c.convert("name.cont"){|search| search.upcase }
+end
+
+# query: { "name.cont" => "search" }
+# => query: {
+#   "name.cont" => "SEARCH",
+# }
+```
+
 #### search condition
 
 - not empty
