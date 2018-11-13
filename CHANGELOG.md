@@ -1,3 +1,7 @@
+# Version : 1.2.0
+
+add: not_nil
+
 # Version : 1.1.2
 
 fix: gitlab-ci
