@@ -153,6 +153,38 @@ module Getto::ParamsTest
       end
     end
 
+    describe "not_empty" do
+      it "failed with empty value" do
+        params = {
+          "name" => "",
+        }
+
+        assert(
+          !Getto::Params.new.validate(params) do |v|
+            v.hash(
+              "name" => v.not_empty,
+            )
+          end
+        )
+      end
+    end
+
+    describe "not_nil" do
+      it "failed with nil" do
+        params = {
+          "name" => nil,
+        }
+
+        assert(
+          !Getto::Params.new.validate(params) do |v|
+            v.hash(
+              "name" => v.not_nil,
+            )
+          end
+        )
+      end
+    end
+
     describe "match" do
       it "failed with unmatch pattern" do
         params = {
