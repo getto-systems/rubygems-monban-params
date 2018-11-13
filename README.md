@@ -61,11 +61,13 @@ Getto::Params::Search.new(
   search.sort do |s|
     s.straight :name
   end
+
   search.convert do |c|
     c.convert "date.lteq", &c.to_date
     c.convert "time.gteq", &c.to_beginning_of_day(time)
     c.convert "time.lteq", &c.to_end_of_day(time)
   end
+
   search.query do |q|
     q.search "name.cont", &q.not_empty
     q.search("value.eq"){|val| ["value1","value2"].include? val }
@@ -194,6 +196,8 @@ Format parameters for search api
 ```ruby
 require "getto/params/search"
 
+time = Time # respond to `parse`
+
 Getto::Params::Search.new(
   page:  1,
   limit: 1000,
@@ -209,6 +213,12 @@ Getto::Params::Search.new(
 
     # sort name as invert order
     s.invert :name
+  end
+
+  search.convert do |c|
+    c.convert "date.lteq", &c.to_date
+    c.convert "time.gteq", &c.to_beginning_of_day(time)
+    c.convert "time.lteq", &c.to_end_of_day(time)
   end
 
   search.query do |q|
