@@ -1,3 +1,7 @@
+# Version : 0.1.0
+
+fix: validation
+
 # Version : 1.3.1
 
 fix: gitlab-ci
