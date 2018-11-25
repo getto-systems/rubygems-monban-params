@@ -1,12 +1,12 @@
 require "test_helper"
 
-require "getto/params"
+require "monban/params"
 
-module Getto::ParamsTest
+module Monban::ParamsTest
   class AppError < RuntimeError
   end
 
-  describe Getto::Params do
+  describe Monban::Params do
     describe "validates" do
       it "success if all validation satisfied" do
         params = {
@@ -34,7 +34,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          Getto::Params.new.validate(params) do |v|
+          Monban::Params.new.validate(params) do |v|
             v.hash(
               "name"  => v.combine([v.string, v.not_empty]),
               "token" => v.combine([v.string, v.length(5)]),
@@ -75,7 +75,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.combine([v.string, v.not_empty]),
               "hash" => v.hash(
@@ -96,7 +96,7 @@ module Getto::ParamsTest
         }
 
         assert_raises AppError do
-          Getto::Params.new.validate(params) do |v|
+          Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.combine([v.string, v.not_empty]){|val| raise AppError, val},
             )
@@ -112,7 +112,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.equal("KEY"),
             )
@@ -128,7 +128,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.in(["value1","value2"]),
             )
@@ -144,7 +144,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.length(3),
             )
@@ -160,7 +160,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.not_empty,
             )
@@ -176,7 +176,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.not_nil,
             )
@@ -192,7 +192,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.match(%r{\A[0-9]+-[0-9]+-[0-9]+\Z}),
             )
@@ -208,7 +208,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.match_integer,
             )
@@ -224,7 +224,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.match_bool,
             )
@@ -240,7 +240,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "date" => v.match_date,
             )
@@ -263,7 +263,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          Getto::Params.new.validate(params) do |v|
+          Monban::Params.new.validate(params) do |v|
             v.hash(
               "name" => v.combine([v.string, v.not_empty]),
             )
@@ -280,7 +280,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash_strict(
               "name" => v.combine([v.string, v.not_empty]),
             )
@@ -294,7 +294,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash_strict(
               "name"  => v.combine([v.string, v.not_empty]),
               "value" => v.combine([v.string, v.not_empty]),
@@ -311,7 +311,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          !Getto::Params.new.validate(params) do |v|
+          !Monban::Params.new.validate(params) do |v|
             v.hash(
               "keys" => v.array_include(["value1","value2","value3"]),
             )
@@ -325,7 +325,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          Getto::Params.new.validate(params) do |v|
+          Monban::Params.new.validate(params) do |v|
             v.hash(
               "keys" => v.array_include(["value1","value2","value3"]),
             )
@@ -341,7 +341,7 @@ module Getto::ParamsTest
         }
 
         assert(
-          Getto::Params.new.validate(params) do |v|
+          Monban::Params.new.validate(params) do |v|
             v.hash(
               "keys" => v.array(v.allow_empty(v.match_integer)),
             )

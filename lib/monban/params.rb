@@ -1,6 +1,6 @@
 require "date"
 
-module Getto
+module Monban
   class Params
     def initialize(factory=Validator::Factory.new)
       @factory = factory

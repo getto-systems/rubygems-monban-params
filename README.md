@@ -1,13 +1,13 @@
-# getto-params
+# monban-params
 
-[rubygems: getto-params](https://rubygems.org/gems/getto-params)
+[rubygems: monban-params](https://rubygems.org/gems/monban-params)
 
 Validate parameters like strong-parameters(rails)
 
 ```ruby
-require "getto/params"
+require "monban/params"
 
-Getto::Params.new.validate(params) do |v|
+Monban::Params.new.validate(params) do |v|
   v.hash(
     "name"  => v.combine([v.string, v.not_empty]){|val|
       raise ArgumentError, "name should be not empty string: #{val}"
@@ -42,11 +42,11 @@ end
 - misc: format parameters for search
 
 ```ruby
-require "getto/params/search"
+require "monban/params/search"
 
 time = Time # respond to `parse`
 
-Getto::Params::Search.new(
+Monban::Params::Search.new(
   page:  1,
   limit: 1000,
   sort: "name.asc",
@@ -111,9 +111,9 @@ end
 ## Usage
 
 ```ruby
-require "getto/params"
+require "monban/params"
 
-Getto::Params.new.validate(params) do |v|
+Monban::Params.new.validate(params) do |v|
   # argument `params` should be hash
   v.hash(
     # should be String
@@ -189,16 +189,16 @@ end
 ```
 
 
-### Getto::Params::Search
+### Monban::Params::Search
 
 Format parameters for search api
 
 ```ruby
-require "getto/params/search"
+require "monban/params/search"
 
 time = Time # respond to `parse`
 
-Getto::Params::Search.new(
+Monban::Params::Search.new(
   page:  1,
   limit: 1000,
   sort: "name.asc",
@@ -424,7 +424,7 @@ end
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'getto-params'
+gem 'monban-params'
 ```
 
 And then execute:
@@ -436,13 +436,13 @@ $ bundle
 Or install it yourself as:
 
 ```
-$ gem install getto-params
+$ gem install monban-params
 ```
 
 
 <a id="License"></a>
 ## License
 
-getto/params is licensed under the [MIT](LICENSE) license.
+monban/params is licensed under the [MIT](LICENSE) license.
 
 Copyright &copy; since 2018 shun@getto.systems
