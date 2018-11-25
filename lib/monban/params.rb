@@ -2,129 +2,126 @@ require "date"
 
 module Monban
   class Params
+    class Error < RuntimeError; end
+
     def initialize(factory=Validator::Factory.new)
       @factory = factory
     end
 
     def validate(params)
-      yield(@factory).call(params)
+      yield(@factory).call(:params, params)
     end
 
     class Validator
-      def initialize(func,&failed)
+      def initialize(func,&message)
         @func = func
-        @failed = failed
+        @message = message
       end
 
-      def call(params)
-        @func.call(params).tap{|is_valid|
-          unless is_valid
-            @failed && @failed.call(params)
-          end
-        }
+      def call(key,value)
+        @func.call(key,value) or raise Monban::Params::Error, "#{key} #{@message && @message.call} : [#{value}]"
       end
 
       class Factory
-        def integer(&block)
-          Validator.new(->(value){ value.is_a? Integer }, &block)
+        def integer
+          Validator.new(->(key,value){ value.is_a? Integer }){"must be integer"}
         end
 
-        def string(&block)
-          Validator.new(->(value){ value.is_a? String }, &block)
+        def string
+          Validator.new(->(key,value){ value.is_a? String }){"must be string"}
         end
 
-        def bool(&block)
-          Validator.new(->(value){ value == true || value == false }, &block)
+        def bool
+          Validator.new(->(key,value){ value == true || value == false }){"must be boolean"}
         end
 
 
-        def equal(val,&block)
-          Validator.new(->(value){ value == val }, &block)
+        def equal(val)
+          Validator.new(->(key,value){ value == val }){"must equal #{val}"}
         end
 
-        def in(values,&block)
-          Validator.new(->(value){ values.include?(value) }, &block)
+        def in(values)
+          Validator.new(->(key,value){ values.include?(value) }){"must be in [#{values}]"}
         end
 
-        def not_empty(&block)
-          Validator.new(->(value){ not value.empty? }, &block)
+        def not_empty
+          Validator.new(->(key,value){ !value.respond_to?(:empty?) || !value.empty? }){"must not be empty"}
         end
 
-        def not_nil(&block)
-          Validator.new(->(value){ not value.nil? }, &block)
+        def not_nil
+          Validator.new(->(key,value){ not value.nil? }){"must not be nil"}
         end
 
-        def length(length,&block)
-          Validator.new(->(value){ value && value.length == length }, &block)
+        def length(length)
+          Validator.new(->(key,value){ value && value.length == length }){"'s length must equal #{length}"}
         end
 
-        def match(pattern,&block)
-          Validator.new(->(value){ value && value.match?(pattern) }, &block)
+        def match(pattern)
+          Validator.new(->(key,value){ value && value.match?(pattern) }){"must match #{pattern}"}
         end
 
-        def match_integer(&block)
-          Validator.new(->(value){ value && value.to_i.to_s == value }, &block)
+        def match_integer
+          Validator.new(->(key,value){ value && value.to_i.to_s == value }){"must match integer pattern"}
         end
 
-        def match_bool(&block)
-          Validator.new(->(value){ value && ["true","false"].include?(value.to_s.downcase) }, &block)
+        def match_bool
+          Validator.new(->(key,value){ value && ["true","false"].include?(value.to_s.downcase) }){"must match boolean pattern"}
         end
 
-        def match_date(&block)
-          Validator.new(->(value){
+        def match_date
+          Validator.new(->(key,value){
             begin
               value && Date.parse(value)
             rescue ArgumentError
               false
             end
-          }, &block)
+          }){"must match date pattern"}
         end
 
 
-        def hash(spec,&block)
-          Validator.new(->(value){
+        def hash(spec)
+          Validator.new(->(key,value){
             value && spec.all?{|key,validator|
-              value.has_key?(key) && validator.call(value[key])
+              value.has_key?(key) && validator.call(key, value[key])
             }
-          }, &block)
+          }){"must satisfy hash spec"}
         end
 
-        def hash_strict(spec,&block)
-          Validator.new(->(value){
+        def hash_strict(spec)
+          Validator.new(->(key,value){
             validators = spec.dup
             value && value.all?{|key,val|
               validators.delete(key).tap{|validator|
-                break validator ? validator.call(val) : false
+                break validator ? validator.call(key,val) : false
               }
             } && validators.empty?
-          }, &block)
+          }){"must satisfy hash spec"}
         end
 
 
-        def array(validator,&block)
-          Validator.new(->(value){
-            value && value.is_a?(Array) && value.all?{|val| validator.call(val)}
-          }, &block)
+        def array(validator)
+          Validator.new(->(key,value){
+            value && value.is_a?(Array) && value.all?{|val| validator.call(key,val)}
+          }){"must satisfy array spec"}
         end
 
         def array_include(values,&block)
-          Validator.new(->(value){
+          Validator.new(->(key,value){
             value && value.is_a?(Array) && value.all?{|val| values.include?(val)}
-          }, &block)
+          }){"'s value must be in #{values}"}
         end
 
 
-        def combine(validators,&block)
-          Validator.new(->(value){
-            validators.all?{|validator| validator.call(value)}
-          }, &block)
+        def combine(validators)
+          Validator.new(->(key,value){
+            validators.all?{|validator| validator.call(key,value)}
+          })
         end
 
-
-        def allow_empty(validator,&block)
-          Validator.new(->(value){
-            value.empty? or validator.call(value)
-          }, &block)
+        def allow_empty(validator)
+          Validator.new(->(key,value){
+            (value.respond_to?(:empty?) && value.empty?) or validator.call(key,value)
+          })
         end
       end
     end
