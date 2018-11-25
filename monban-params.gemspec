@@ -1,18 +1,18 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "getto/params/version"
+require "monban/params/version"
 
 Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 2.5.1"
 
-  spec.name          = "getto-params"
-  spec.version       = Getto::Params::VERSION
+  spec.name          = "monban-params"
+  spec.version       = Monban::Params::VERSION
   spec.authors       = ["shun@getto.systems"]
   spec.email         = ["shun@getto.systems"]
 
   spec.summary       = %q{validation and format params}
   spec.description   = %q{Validate parameters like strong-parameters(rails), and parameter formatter for search api}
-  spec.homepage      = "https://github.com/getto-systems/rubygems-getto-params"
+  spec.homepage      = "https://github.com/getto-systems/rubygems-monban-params"
   spec.license       = "MIT"
 
   # Specify which files should be added to the gem when it is released.
@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
 
 
   spec.extra_rdoc_files = ['README.md', 'LICENSE']
-  spec.rdoc_options = %w[--title Getto::Params --main README.md]
+  spec.rdoc_options = %w[--title Monban::Params --main README.md]
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"
