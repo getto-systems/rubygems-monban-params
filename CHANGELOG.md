@@ -1,3 +1,7 @@
+# Version : 0.1.1
+
+fix: travis
+
 # Version : 0.1.0
 
 fix: validation
