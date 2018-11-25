@@ -7,6 +7,7 @@ cache:
 test:
   except:
     - tags
+    - master
     - release
   script:
     - bundle
