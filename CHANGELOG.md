@@ -1,3 +1,7 @@
+# Version : 0.1.2
+
+fix: travis
+
 # Version : 0.1.1
 
 fix: travis

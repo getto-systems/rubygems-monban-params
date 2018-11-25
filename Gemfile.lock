@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    monban-params (0.1.1)
+    monban-params (0.1.2)
 
 GEM
   remote: https://rubygems.org/
